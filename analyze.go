@@ -14,55 +14,53 @@ func CreateWeekdayMap(stockDatas []StockData) map[time.Weekday][]StockData {
 	return weekdayMap
 }
 
-func FindAvgWeekday(stockDatas []StockData) ResultRank {
-	sort.Slice(stockDatas, func(i, j int) bool {
-		return GetTimeStamp(stockDatas[i].Date).Before(GetTimeStamp(stockDatas[j].Date))
-	})
+func FindAvgWeekday(stockDatas []StockData) ResultWeekdayRank {
+	stockDatas = SortStockDatas(stockDatas)
 	currentStockPrice := stockDatas[len(stockDatas)-1].Close
 
 	weekdayMap := CreateWeekdayMap(stockDatas)
 
-	var result ResultRank
+	var result ResultWeekdayRank
 
-	openMap := FindAvgFromMap(weekdayMap, func(stockData StockData) float32 {
+	openMap := FindAvgWeekdayFromMap(weekdayMap, func(stockData StockData) float32 {
 		return stockData.Open
 	})
-	openRank := CreateRank(openMap, currentStockPrice)
+	openRank := CreateWeekdayRank(openMap, currentStockPrice)
 	result.Open = openRank
-	DisplayMap("Open Price", openRank, currentStockPrice)
+	DisplayWeekdayRank("Open Price", openRank, currentStockPrice)
 
-	lowMap := FindAvgFromMap(weekdayMap, func(stockData StockData) float32 {
+	lowMap := FindAvgWeekdayFromMap(weekdayMap, func(stockData StockData) float32 {
 		return stockData.Low
 	})
-	lowRank := CreateRank(lowMap, currentStockPrice)
+	lowRank := CreateWeekdayRank(lowMap, currentStockPrice)
 	result.Low = lowRank
-	DisplayMap("Low Price", lowRank, currentStockPrice)
+	DisplayWeekdayRank("Low Price", lowRank, currentStockPrice)
 
-	highMap := FindAvgFromMap(weekdayMap, func(stockData StockData) float32 {
+	highMap := FindAvgWeekdayFromMap(weekdayMap, func(stockData StockData) float32 {
 		return stockData.High
 	})
-	highRank := CreateRank(highMap, currentStockPrice)
+	highRank := CreateWeekdayRank(highMap, currentStockPrice)
 	result.High = highRank
-	DisplayMap("High Price", highRank, currentStockPrice)
+	DisplayWeekdayRank("High Price", highRank, currentStockPrice)
 
-	closeMap := FindAvgFromMap(weekdayMap, func(stockData StockData) float32 {
+	closeMap := FindAvgWeekdayFromMap(weekdayMap, func(stockData StockData) float32 {
 		return stockData.Close
 	})
-	closeRank := CreateRank(closeMap, currentStockPrice)
+	closeRank := CreateWeekdayRank(closeMap, currentStockPrice)
 	result.Close = closeRank
-	DisplayMap("Close Price", closeRank, currentStockPrice)
+	DisplayWeekdayRank("Close Price", closeRank, currentStockPrice)
 
-	VolMap := FindAvgFromMap(weekdayMap, func(stockData StockData) float32 {
+	VolMap := FindAvgWeekdayFromMap(weekdayMap, func(stockData StockData) float32 {
 		return stockData.Volume
 	})
-	volRank := CreateRank(VolMap, currentStockPrice)
+	volRank := CreateWeekdayRank(VolMap, currentStockPrice)
 	result.Vol = volRank
-	DisplayMap("Volume", volRank, 0)
+	DisplayWeekdayRank("Volume", volRank, 0)
 
 	return result
 }
 
-func FindAvgFromMap(weekdayMap map[time.Weekday][]StockData, getVal func(StockData) float32) map[time.Weekday]float32 {
+func FindAvgWeekdayFromMap(weekdayMap map[time.Weekday][]StockData, getVal func(StockData) float32) map[time.Weekday]float32 {
 	weekdayMapAvg := make(map[time.Weekday]float32, 0)
 	for weekDay := range weekdayMap {
 		var sum float32 = 0
@@ -76,7 +74,7 @@ func FindAvgFromMap(weekdayMap map[time.Weekday][]StockData, getVal func(StockDa
 	return weekdayMapAvg
 }
 
-func CreateRank(weekdayMap map[time.Weekday]float32, currentPrice float32) WeekdayValuePairList {
+func CreateWeekdayRank(weekdayMap map[time.Weekday]float32, currentPrice float32) WeekdayValuePairList {
 	var l WeekdayValuePairList
 	for weekday := range weekdayMap {
 		val := weekdayMap[weekday]
@@ -92,7 +90,7 @@ func CreateRank(weekdayMap map[time.Weekday]float32, currentPrice float32) Weekd
 	return l
 }
 
-func FindTotalRank(resultList []ResultRank) WeekdayValuePairList {
+func FindWeekdayTotalRank(resultList []ResultWeekdayRank) WeekdayValuePairList {
 	rankMap := make(map[time.Weekday]float32)
 	for i := range resultList {
 		for j, w := range resultList[i].Open {
@@ -108,5 +106,109 @@ func FindTotalRank(resultList []ResultRank) WeekdayValuePairList {
 			rankMap[w.Weekday] += float32(j + 1)
 		}
 	}
-	return CreateRank(rankMap, 0)
+	return CreateWeekdayRank(rankMap, 0)
+}
+
+func CreatePartOfMonthMap(stockDatas []StockData) map[int][]StockData {
+	partOfMonthMap := make(map[int][]StockData, 0)
+	for _, stockData := range stockDatas {
+		partOfMonth := ConvertDayToPartOfMonth(GetTimeStamp(stockData.Date).Day())
+		partOfMonthMap[partOfMonth] = append(partOfMonthMap[partOfMonth], stockData)
+	}
+	return partOfMonthMap
+}
+
+func FindAvgPartOfMonth(stockDatas []StockData) ResultPartOfMonthRank {
+	stockDatas = SortStockDatas(stockDatas)
+	currentStockPrice := stockDatas[len(stockDatas)-1].Close
+
+	partOfMonthMap := CreatePartOfMonthMap(stockDatas)
+
+	var result ResultPartOfMonthRank
+
+	openMap := FindAvgPartOfMonthFromMap(partOfMonthMap, func(stockData StockData) float32 {
+		return stockData.Open
+	})
+	openRank := CreatePartOfMonthRank(openMap, currentStockPrice)
+	result.Open = openRank
+	DisplayPartOfMonthRank("Open Price", openRank, currentStockPrice)
+
+	lowMap := FindAvgPartOfMonthFromMap(partOfMonthMap, func(stockData StockData) float32 {
+		return stockData.Low
+	})
+	lowRank := CreatePartOfMonthRank(lowMap, currentStockPrice)
+	result.Low = lowRank
+	DisplayPartOfMonthRank("Low Price", lowRank, currentStockPrice)
+
+	highMap := FindAvgPartOfMonthFromMap(partOfMonthMap, func(stockData StockData) float32 {
+		return stockData.High
+	})
+	highRank := CreatePartOfMonthRank(highMap, currentStockPrice)
+	result.High = highRank
+	DisplayPartOfMonthRank("High Price", highRank, currentStockPrice)
+
+	closeMap := FindAvgPartOfMonthFromMap(partOfMonthMap, func(stockData StockData) float32 {
+		return stockData.Close
+	})
+	closeRank := CreatePartOfMonthRank(closeMap, currentStockPrice)
+	result.Close = closeRank
+	DisplayPartOfMonthRank("Close Price", closeRank, currentStockPrice)
+
+	volMap := FindAvgPartOfMonthFromMap(partOfMonthMap, func(stockData StockData) float32 {
+		return stockData.Volume
+	})
+	volRank := CreatePartOfMonthRank(volMap, currentStockPrice)
+	result.Vol = volRank
+	DisplayPartOfMonthRank("Volume", volRank, 0)
+
+	return result
+}
+
+func FindAvgPartOfMonthFromMap(partOfMonthMap map[int][]StockData, getVal func(StockData) float32) map[int]float32 {
+	partOfMonthMapAvg := make(map[int]float32, 0)
+	for weekDay := range partOfMonthMap {
+		var sum float32 = 0
+		count := 0
+		for _, stockData := range partOfMonthMap[weekDay] {
+			sum += getVal(stockData)
+			count++
+		}
+		partOfMonthMapAvg[weekDay] = sum / float32(count)
+	}
+	return partOfMonthMapAvg
+}
+
+func CreatePartOfMonthRank(partOfMonthMap map[int]float32, currentPrice float32) PartOfMonthValuePairList {
+	var l PartOfMonthValuePairList
+	for partOfMonth := range partOfMonthMap {
+		val := partOfMonthMap[partOfMonth]
+		var p PartOfMonthValuePair
+		p.PartOfMonth = partOfMonth
+		p.Value = val
+		if currentPrice != 0 {
+			p.Percentage = (currentPrice - val) * 100 / val
+		}
+		l = append(l, p)
+	}
+	sort.Sort(l)
+	return l
+}
+
+func FindPartOfMonthTotalRank(resultList []ResultPartOfMonthRank) PartOfMonthValuePairList {
+	rankMap := make(map[int]float32)
+	for i := range resultList {
+		for j, p := range resultList[i].Open {
+			rankMap[p.PartOfMonth] += float32(j + 1)
+		}
+		for j, p := range resultList[i].Close {
+			rankMap[p.PartOfMonth] += float32(j + 1)
+		}
+		for j, p := range resultList[i].Low {
+			rankMap[p.PartOfMonth] += float32(j + 1)
+		}
+		for j, p := range resultList[i].High {
+			rankMap[p.PartOfMonth] += float32(j + 1)
+		}
+	}
+	return CreatePartOfMonthRank(rankMap, 0)
 }

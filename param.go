@@ -47,10 +47,36 @@ func (p WeekdayValuePairList) Len() int           { return len(p) }
 func (p WeekdayValuePairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
 func (p WeekdayValuePairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
-type ResultRank struct {
+type ResultWeekdayRank struct {
 	Open  WeekdayValuePairList
 	Close WeekdayValuePairList
 	Low   WeekdayValuePairList
 	High  WeekdayValuePairList
 	Vol   WeekdayValuePairList
+}
+
+const (
+	StartOfMonth = iota + 1
+	MiddleOfMonth
+	EndOfMonth
+)
+
+type PartOfMonthValuePair struct {
+	PartOfMonth int
+	Value       float32
+	Percentage  float32
+}
+
+type PartOfMonthValuePairList []PartOfMonthValuePair
+
+func (p PartOfMonthValuePairList) Len() int           { return len(p) }
+func (p PartOfMonthValuePairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
+func (p PartOfMonthValuePairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+type ResultPartOfMonthRank struct {
+	Open  PartOfMonthValuePairList
+	Close PartOfMonthValuePairList
+	Low   PartOfMonthValuePairList
+	High  PartOfMonthValuePairList
+	Vol   PartOfMonthValuePairList
 }

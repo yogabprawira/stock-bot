@@ -10,7 +10,39 @@ func GetTimeStamp(dateTime string) time.Time {
 	return t
 }
 
+func ConvertDayToPartOfMonth(day int) int {
+	if day <= 10 {
+		return StartOfMonth
+	} else if day > 20 {
+		return EndOfMonth
+	} else {
+		return MiddleOfMonth
+	}
+}
+
+func PartOfMonthToString(partOfMonth int) string {
+	switch partOfMonth {
+	case StartOfMonth:
+		return "Start of Month"
+	case MiddleOfMonth:
+		return "Middle of Month"
+	case EndOfMonth:
+		return "End of Month"
+	default:
+		return ""
+	}
+}
+
+func SortStockDatas(stockDatas []StockData) []StockData {
+	sort.Slice(stockDatas, func(i, j int) bool {
+		return GetTimeStamp(stockDatas[i].Date).Before(GetTimeStamp(stockDatas[j].Date))
+	})
+	return stockDatas
+}
+
 func MergeData(resp1 Response, resp2 Response) (Response, error) {
+	resp1.Data = SortStockDatas(resp1.Data)
+	resp2.Data = SortStockDatas(resp2.Data)
 	var resp Response
 	resp = resp1
 	minDate := GetTimeStamp(resp.Data[0].Date)
@@ -22,8 +54,6 @@ func MergeData(resp1 Response, resp2 Response) (Response, error) {
 			resp.Pagination.Total++
 		}
 	}
-	sort.Slice(resp.Data, func(i, j int) bool {
-		return GetTimeStamp(resp.Data[i].Date).Before(GetTimeStamp(resp.Data[j].Date))
-	})
+	resp.Data = SortStockDatas(resp.Data)
 	return resp, nil
 }

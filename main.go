@@ -34,6 +34,39 @@ var symbolListIdx = []string{
 	"WIRG.XIDX",
 }
 
+var symbolListIdx30 = []string{
+	"ADRO.XIDX",
+	"ANTM.XIDX",
+	"ASII.XIDX",
+	"BBCA.XIDX",
+	"BBNI.XIDX",
+	"BBRI.XIDX",
+	"BBTN.XIDX",
+	"BMRI.XIDX",
+	"BRPT.XIDX",
+	"BUKA.XIDX",
+	"CPIN.XIDX",
+	"EMTK.XIDX",
+	"EXCL.XIDX",
+	"ICBP.XIDX",
+	"INCO.XIDX",
+	"INDF.XIDX",
+	"INKP.XIDX",
+	"KLBF.XIDX",
+	"MDKA.XIDX",
+	"MIKA.XIDX",
+	"PGAS.XIDX",
+	"PTBA.XIDX",
+	"SMGR.XIDX",
+	"TBIG.XIDX",
+	"TINS.XIDX",
+	"TLKM.XIDX",
+	"TOWR.XIDX",
+	"UNTR.XIDX",
+	"UNVR.XIDX",
+	"WSKT.XIDX",
+}
+
 var symbolListNasdaq = []string{
 	"MSFT",
 	"AAPL",
@@ -69,37 +102,48 @@ func main() {
 	var err error
 	var resp Response
 
-	totalResult := make([]ResultRank, 0)
+	totalWeekdayResult := make([]ResultWeekdayRank, 0)
+	totalPartOfMonthResult := make([]ResultPartOfMonthRank, 0)
 
-	symbolList := symbolListIdx
-	//symbolList = symbolListNasdaq
+	//symbolList := symbolListIdx
+	//symbolList := symbolListNasdaq
+	symbolList := symbolListIdx30
 
 	for _, symbol := range symbolList {
+		fmt.Println("")
+		fmt.Println("")
 		fmt.Println("Symbol:" + symbol)
-
-		resp, err = FetchEodData(symbol)
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		err = SaveFile(symbol, resp)
-		if err != nil {
-			log.Fatalln(err)
-		}
 
 		resp, err = LoadFile(symbol)
 		if err != nil {
-			log.Fatalln(err)
+			resp, err = FetchEodData(symbol)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			err = SaveFile(symbol, resp)
+			if err != nil {
+				log.Fatalln(err)
+			}
 		}
 
-		result := FindAvgWeekday(resp.Data)
-		totalResult = append(totalResult, result)
+		weekdayResult := FindAvgWeekday(resp.Data)
+		totalWeekdayResult = append(totalWeekdayResult, weekdayResult)
+
+		partOfMonthResult := FindAvgPartOfMonth(resp.Data)
+		totalPartOfMonthResult = append(totalPartOfMonthResult, partOfMonthResult)
 	}
 
-	totalRank := FindTotalRank(totalResult)
+	totalWeekdayRank := FindWeekdayTotalRank(totalWeekdayResult)
 	fmt.Println("")
-	fmt.Println("===DAY RANK===")
-	for i := range totalRank {
-		fmt.Println(totalRank[i].Weekday.String())
+	fmt.Println("===WEEKDAY RANK===")
+	for i := range totalWeekdayRank {
+		fmt.Println(totalWeekdayRank[i].Weekday.String(), ":", totalWeekdayRank[i].Value)
+	}
+
+	totalPartOfMonthRank := FindPartOfMonthTotalRank(totalPartOfMonthResult)
+	fmt.Println("")
+	fmt.Println("===PART OF MONTH RANK===")
+	for i := range totalPartOfMonthRank {
+		fmt.Println(PartOfMonthToString(totalPartOfMonthRank[i].PartOfMonth), ":", totalPartOfMonthRank[i].Value)
 	}
 }
