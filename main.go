@@ -114,8 +114,9 @@ func main() {
 		fmt.Println("")
 		fmt.Println("Symbol:" + symbol)
 
-		resp, err = LoadFile(symbol)
+		resp, err = LoadFile("data", symbol)
 		if err != nil {
+			fmt.Println("Fetch data online")
 			resp, err = FetchEodData(symbol)
 			if err != nil {
 				log.Fatalln(err)

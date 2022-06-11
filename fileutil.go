@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
 )
 
 func SaveFile(symbol string, resp Response) error {
@@ -14,8 +15,8 @@ func SaveFile(symbol string, resp Response) error {
 	return ioutil.WriteFile(filename, jsonByte, 0644)
 }
 
-func LoadFile(symbol string) (Response, error) {
-	filename := symbol + ".json"
+func LoadFile(dir, symbol string) (Response, error) {
+	filename := dir + string(os.PathSeparator) + symbol + ".json"
 	jsonByte, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return Response{}, err
